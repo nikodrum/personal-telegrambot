@@ -65,22 +65,35 @@ def build_gif(frames, title=''):
 
 if __name__ == '__main__':
 
+    logger.info("Script initialized.")
     set_constants()
 
     while True:
 
         if datetime.now().hour in INIT_HOURS:
+
+            logger.info("Getting new frame.")
+
             INIT_HOURS.remove(datetime.now().hour)
             download_file("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
             get_frame()
 
+            logger.info("Getting succed.")
+
         if GIF_NEEDED and datetime.now().hour > 16:
+
+            logger.info("Started making gif.")
+
             frames_list = load_all_images("./data/frames")
             build_gif(frames=frames_list)
 
             GIF_NEEDED = False
 
+            logger.info("Making succed.")
+
         if current_day != datetime.now().date:
+
+            logger.info("Updating constants.")
             set_constants()
 
         time.sleep(60 * 60)
