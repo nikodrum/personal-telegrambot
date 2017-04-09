@@ -17,7 +17,7 @@ def set_constants():
     global INIT_HOURS
     INIT_HOURS = [h - 3 for h in range(8, 19)]
     global CURRENT_DAY
-    CURRENT_DAY = datetime.now().date
+    CURRENT_DAY = datetime.now().date()
     global GIF_NEEDED
     GIF_NEEDED = True
 
@@ -31,13 +31,13 @@ def download_file(url):
     return True
 
 
-def get_frame():
+def get_frame(file):
     cap = cv2.VideoCapture('./data/temp/video.mp4')
     count = 0
     while cap.isOpened():
         ret, frame = cap.read()
         if count == 10:
-            cv2.imwrite("./data/frames/%d.jpg" % round(time.time(), 0), frame)
+            cv2.imwrite("./data/frames/%d" % file, frame)
             break
         count += 1
     cap.release()
@@ -45,8 +45,8 @@ def get_frame():
 
 def load_all_images(frames_dir):
     frames = []
-    for file_name in os.listdir(frames_dir):
-        img = cv2.imread(os.path.join(frames_dir, file_name))
+    for frame_name in os.listdir(frames_dir):
+        img = cv2.imread(os.path.join(frames_dir, frame_name))
         frames.append(img)
 
     return frames
@@ -77,9 +77,13 @@ if __name__ == '__main__':
 
             INIT_HOURS.remove(datetime.now().hour)
             download_file("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
-            get_frame()
+            file_name = str(round(time.time(), 0)) + '.jpg'
+            get_frame(file_name)
 
-            logger.info("Getting succed.")
+            if file_name in os.listdir('./data/frames'):
+                logger.info("Getting succeed.")
+            else:
+                logger.info("Getting failed.")
 
         if GIF_NEEDED and datetime.now().hour > 16:
 
