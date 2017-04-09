@@ -1,3 +1,4 @@
+matplotlib==2.0.0
 appdirs==1.4.3
 cheroot==5.4.0
 CherryPy==10.2.1
