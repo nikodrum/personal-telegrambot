@@ -7,7 +7,8 @@ import cv2
 import logging
 import time
 
-logging.basicConfig(format=u'%(level_name)-8s [%(asc_time)s] %(message)s',
+logging.basicConfig(format=u'%(levelname)-8s [%(asctime)s] %(message)s',
+                    level='INFO',
                     filename=u'frames_getter.log')
 logger = logging.getLogger(__name__)
 
@@ -15,8 +16,8 @@ logger = logging.getLogger(__name__)
 def set_constants():
     global INIT_HOURS
     INIT_HOURS = [h - 3 for h in range(8, 19)]
-    global current_day
-    current_day = datetime.now().date
+    global CURRENT_DAY
+    CURRENT_DAY = datetime.now().date
     global GIF_NEEDED
     GIF_NEEDED = True
 
@@ -91,7 +92,7 @@ if __name__ == '__main__':
 
             logger.info("Making succed.")
 
-        if current_day != datetime.now().date:
+        if CURRENT_DAY != datetime.now().date():
 
             logger.info("Updating constants.")
             set_constants()
