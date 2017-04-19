@@ -39,7 +39,7 @@ def get_frame(file):
     while cap.isOpened():
         ret, frame = cap.read()
         if count == 10:
-            cv2.imwrite('./data/frames/{}/{}'.format(datetime.today().date, file), frame)
+            cv2.imwrite('./data/frames/{}/{}'.format(datetime.today().date(), file), frame)
             break
         count += 1
     cap.release()
@@ -84,7 +84,7 @@ if __name__ == '__main__':
             file_name = str(round(time.time(), 0)) + '.jpg'
             get_frame(file_name)
 
-            if file_name in os.listdir('./data/frames/%s' % datetime.today().date):
+            if file_name in os.listdir('./data/frames/%s' % datetime.today().date()):
                 logger.info("Getting succeed.")
             else:
                 logger.info("Getting failed.")
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
             logger.info("Started making gif.")
 
-            frames_list = load_all_images("./data/frames/%s" % datetime.today().date)
+            frames_list = load_all_images("./data/frames/%s" % datetime.today().date())
             logger.info("Got %d frames. " % len(frames_list))
             build_gif(frames=frames_list)
 
@@ -105,6 +105,6 @@ if __name__ == '__main__':
 
             logger.info("Updating constants.")
             set_constants()
-            os.makedirs('./data/frames/%s' % datetime.today().date)
+            os.makedirs('./data/frames/%s' % datetime.today().date())
 
         time.sleep(60 * 60)
