@@ -47,6 +47,8 @@ def get_frame(file):
 
 def load_all_images(frames_dir):
     frames = []
+    if not os.path.exists(frames_dir):
+        os.makedirs(frames_dir)
     for frame_name in os.listdir(frames_dir):
         img = cv2.imread(os.path.join(frames_dir, frame_name), cv2.IMREAD_COLOR)
         if img is not None:
