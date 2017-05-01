@@ -10,7 +10,7 @@ import logging
 import time
 
 logging.basicConfig(format=u'%(levelname)-8s [%(asctime)s] %(message)s',
-                    level='INFO',
+                    level='DEBUG',
                     filename=u'frames_getter.log')
 logger = logging.getLogger(__name__)
 
@@ -59,13 +59,16 @@ def load_all_images(frames_dir):
 
 
 def build_gif(frames, title=''):
+
+    logger.info("Started making new gif...")
     fig = plt.figure(figsize=[12.8, 7.2], frameon=False)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_axis_off()
     ims = [(plt.imshow(x), ax.set_title(title)) for x in frames]
     im_ani = animation.ArtistAnimation(fig, ims, interval=100, repeat_delay=0, blit=True)
-
+    logger.info("GIF successfully created.")
     im_ani.save('./data/gif/%s.gif' % round(time.time(), 0), writer='imagemagick', dpi=60)
+    logger.info("GIF successfully saved.")
 
     return plt.show()
 
@@ -93,7 +96,7 @@ if __name__ == '__main__':
 
         if GIF_NEEDED and datetime.now().hour > 16:
 
-            logger.info("Started making gif.")
+            logger.info("Started making GIF.")
 
             frames_list = load_all_images("./data/frames/%s" % datetime.today().date())
             logger.info("Got %d frames. " % len(frames_list))
