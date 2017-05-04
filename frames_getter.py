@@ -70,8 +70,8 @@ def build_gif(frames, title=''):
     try:
         im_ani.save('./data/gif/%s.gif' % round(time.time(), 0), writer='imagemagick', dpi=60)
         logger.info("GIF successfully saved.")
-    except:
-        logger.info("Saving GIF failed.")
+    except Exception as e:
+        logger.info("Saving GIF failed with error: '%s'" % e)
 
     return plt.show()
 
