@@ -67,8 +67,11 @@ def build_gif(frames, title=''):
     ims = [(plt.imshow(x), ax.set_title(title)) for x in frames]
     im_ani = animation.ArtistAnimation(fig, ims, interval=100, repeat_delay=0, blit=True)
     logger.info("GIF successfully created.")
-    im_ani.save('./data/gif/%s.gif' % round(time.time(), 0), writer='imagemagick', dpi=60)
-    logger.info("GIF successfully saved.")
+    try:
+        im_ani.save('./data/gif/%s.gif' % round(time.time(), 0), writer='imagemagick', dpi=60)
+        logger.info("GIF successfully saved.")
+    except:
+        logger.info("Saving GIF failed.")
 
     return plt.show()
 
