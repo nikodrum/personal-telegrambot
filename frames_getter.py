@@ -87,15 +87,18 @@ if __name__ == '__main__':
 
             logger.info("Getting new frame.")
 
-            INIT_HOURS.remove(datetime.now().hour)
-            download_file("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
-            file_name = str(round(time.time(), 0)) + '.jpg'
-            get_frame(file_name)
+            try:
+                INIT_HOURS.remove(datetime.now().hour)
+                download_file("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
+                file_name = str(round(time.time(), 0)) + '.jpg'
+                get_frame(file_name)
 
-            if file_name in os.listdir('./data/frames/%s' % datetime.today().date()):
-                logger.info("Getting succeed.")
-            else:
-                logger.info("Getting failed.")
+                if file_name in os.listdir('./data/frames/%s' % datetime.today().date()):
+                    logger.info("Getting succeed.")
+                else:
+                    logger.info("Getting failed.")
+            except Exception as e:
+                logger.info("Failed downloading frame with error : '%s'" % e)
 
         if GIF_NEEDED and datetime.now().hour > 16:
 
@@ -111,8 +114,10 @@ if __name__ == '__main__':
 
         if CURRENT_DAY != datetime.now().date():
 
-            logger.info("Updating constants.")
-            set_constants()
-            os.makedirs('./data/frames/%s' % datetime.today().date())
-
+            try:
+                logger.info("Updating constants.")
+                set_constants()
+                os.makedirs('./data/frames/%s' % datetime.today().date())
+            except Exception as e:
+                logger.info("Failed updating constants with error : '%s'" % e)
         time.sleep(60 * 60)
