@@ -22,20 +22,7 @@ bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
                 certificate=open(WEBHOOK_SSL_CERT, 'r'))
 
 
-class BotServer(object):
-    @cherrypy.expose
-    def index(self):
-        if 'content-length' in cherrypy.request.headers and \
-                        'content-type' in cherrypy.request.headers and \
-                        cherrypy.request.headers['content-type'] == 'application/json':
-            length = int(cherrypy.request.headers['content-length'])
-            json_string = cherrypy.request.body.read(length).decode("utf-8")
-            update = telebot.types.Update.de_json(json_string)
-            bot.process_new_updates([update])
-            return "New message received."
-        else:
-            raise cherrypy.HTTPError(403)
-
+class Frame(object):
     @staticmethod
     def download_file(url):
         r = requests.get(url, stream=True)
@@ -57,12 +44,28 @@ class BotServer(object):
             count += 1
         cap.release()
 
+
+class BotServer(object):
+    @cherrypy.expose
+    def index(self):
+        if 'content-length' in cherrypy.request.headers and \
+                        'content-type' in cherrypy.request.headers and \
+                        cherrypy.request.headers['content-type'] == 'application/json':
+            length = int(cherrypy.request.headers['content-length'])
+            json_string = cherrypy.request.body.read(length).decode("utf-8")
+            update = telebot.types.Update.de_json(json_string)
+            bot.process_new_updates([update])
+            return "New message received."
+        else:
+            raise cherrypy.HTTPError(403)
+
+    @staticmethod
     @bot.message_handler(content_types=["text"])
-    def repeat_all_messages(self, message):
+    def repeat_all_messages(message):
         start_time = 0
         if int(time.time()) - start_time > 15 * 60:
-            self.download_file("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
-            self.get_frame()
+            Frame().download_file("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
+            Frame().get_frame()
         logger.info("File size is :" + str(os.stat('frame10.jpg').st_size))
         bot.send_photo(message.chat.id, open('frame10.jpg', 'rb'))
 
