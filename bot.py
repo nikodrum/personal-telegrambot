@@ -1,6 +1,7 @@
 import cherrypy
 import telebot
 import time
+import logging
 from models import Frame
 from config import *
 
@@ -8,6 +9,8 @@ bot = telebot.TeleBot(os.environ['BOT_TOKEN'])
 bot.remove_webhook()
 bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
                 certificate=open(WEBHOOK_SSL_CERT, 'r'))
+
+logger = logging.getLogger(__name__)
 
 
 class BotServer(object):
@@ -28,6 +31,7 @@ class BotServer(object):
     @bot.message_handler(content_types=["text"])
     def repeat_all_messages(message):
         start_time = 0
+        logger.info("Processing request from {}".format(message.chat.id))
         if int(time.time()) - start_time > 15 * 60:
             frame = Frame()
             frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
