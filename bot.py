@@ -1,48 +1,13 @@
-import telebot
 import cherrypy
-import os
-import cv2
-from logger import logger
-import requests
+import telebot
 import time
-
-WEBHOOK_HOST = os.environ['HOST']
-WEBHOOK_PORT = 80
-WEBHOOK_LISTEN = os.environ['HOST']
-
-WEBHOOK_SSL_CERT = './webhook/webhook_cert.pem'
-WEBHOOK_SSL_PRIV = './webhook/webhook_pkey.pem'
-
-WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
-WEBHOOK_URL_PATH = "/%s/" % (os.environ['BOT_TOKEN'])
+from models import Frame
+from config import *
 
 bot = telebot.TeleBot(os.environ['BOT_TOKEN'])
 bot.remove_webhook()
 bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
                 certificate=open(WEBHOOK_SSL_CERT, 'r'))
-
-
-class Frame(object):
-    @staticmethod
-    def download_file(url):
-        r = requests.get(url, stream=True)
-        with open("video.mp4", 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-        return True
-
-    @staticmethod
-    def get_frame():
-        cap = cv2.VideoCapture('./video.mp4')
-        count = 0
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if count == 10:
-                cv2.imwrite("frame%d.jpg" % count, frame)
-                break
-            count += 1
-        cap.release()
 
 
 class BotServer(object):
@@ -64,8 +29,9 @@ class BotServer(object):
     def repeat_all_messages(message):
         start_time = 0
         if int(time.time()) - start_time > 15 * 60:
-            Frame().download_file("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
-            Frame().get_frame()
+            frame = Frame()
+            frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
+            frame.get()
         logger.info("File size is :" + str(os.stat('frame10.jpg').st_size))
         bot.send_photo(message.chat.id, open('frame10.jpg', 'rb'))
 
