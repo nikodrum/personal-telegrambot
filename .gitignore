@@ -1,5 +1,7 @@
 *.iml
 .idea/
-webhook/webhook_cert.pem
-webhook/webhook_pkey.pem
-
+logs/
+__pycache__/
+data/
+notebook/
+webhook/
