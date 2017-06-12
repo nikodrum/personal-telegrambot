@@ -1,7 +1,6 @@
 import cherrypy
 import telebot
 import time
-import logging
 from models import Frame
 from config import *
 
@@ -9,8 +8,6 @@ bot = telebot.TeleBot(os.environ['BOT_TOKEN'])
 bot.remove_webhook()
 bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
                 certificate=open(WEBHOOK_SSL_CERT, 'r'))
-
-logger = logging.getLogger(__name__)
 
 
 class BotServer(object):
