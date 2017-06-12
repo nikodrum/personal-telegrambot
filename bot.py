@@ -1,20 +1,8 @@
-import telebot
 import cherrypy
-import os
-import cv2
-from logger import logger
-import requests
+import telebot
 import time
-
-WEBHOOK_HOST = 'provide here server ip'
-WEBHOOK_PORT = 80
-WEBHOOK_LISTEN = 'provide here server ip'
-
-WEBHOOK_SSL_CERT = './webhook/webhook_cert.pem'
-WEBHOOK_SSL_PRIV = './webhook/webhook_pkey.pem'
-
-WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
-WEBHOOK_URL_PATH = "/%s/" % (os.environ['BOT_TOKEN'])
+from models import Frame
+from config import *
 
 bot = telebot.TeleBot(os.environ['BOT_TOKEN'])
 bot.remove_webhook()
@@ -37,33 +25,15 @@ class BotServer(object):
             raise cherrypy.HTTPError(403)
 
     @staticmethod
-    def download_file(url):
-        r = requests.get(url, stream=True)
-        with open("video.mp4", 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-        return True
-
-    @staticmethod
-    def get_frame():
-        cap = cv2.VideoCapture('./video.mp4')
-        count = 0
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if count == 10:
-                cv2.imwrite("frame%d.jpg" % count, frame)
-                break
-            count += 1
-        cap.release()
-
     @bot.message_handler(content_types=["text"])
-    def repeat_all_messages(self, message):
+    def repeat_all_messages(message):
         start_time = 0
+        cherrypy.log("Processing request from {}".format(message.chat.id))
         if int(time.time()) - start_time > 15 * 60:
-            self.download_file("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
-            self.get_frame()
-        logger.info("File size is :" + str(os.stat('frame10.jpg').st_size))
+            frame = Frame()
+            frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
+            frame.get()
+        cherrypy.log("File size is :" + str(os.stat('frame10.jpg').st_size))
         bot.send_photo(message.chat.id, open('frame10.jpg', 'rb'))
 
 
@@ -72,7 +42,10 @@ cherrypy.config.update({
     'server.socket_port': WEBHOOK_PORT,
     'server.ssl_module': 'builtin',
     'server.ssl_certificate': WEBHOOK_SSL_CERT,
-    'server.ssl_private_key': WEBHOOK_SSL_PRIV
+    'server.ssl_private_key': WEBHOOK_SSL_PRIV,
+    'log.screen': False,
+    'log.error_file': "./logs/error.log",
+    'log.access_file': "./logs/access_file.log"
 })
 
 
