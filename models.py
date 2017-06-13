@@ -93,16 +93,14 @@ class Gif(object):
         return False
 
 
-class Recognize(object):
+class Speech(object):
 
-    def __init__(self, message):
-        self.message = message
+    def __init__(self):
+        pass
 
-    def recognize(self):
-        if re.findall(r"гиф", self.message):
+    @staticmethod
+    def recognize(message):
+        if re.findall(r"гиф", message):
             return "gif"
         else:
             return "frame"
-
-    def __call__(self, *args, **kwargs):
-        self.recognize()

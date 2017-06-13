@@ -2,7 +2,7 @@ import cherrypy
 import telebot
 import time
 from datetime import datetime
-from models import Frame, Recognize, Gif
+from models import Frame, Speech, Gif
 from config import *
 
 bot = telebot.TeleBot(os.environ['BOT_TOKEN'])
@@ -31,7 +31,8 @@ class BotServer(object):
         u_id = message.chat.id
         cherrypy.log("Processing request from {}.".format(u_id))
 
-        request = Recognize(message)
+        speech = Speech()
+        request = speech.recognize(message)
         cherrypy.log("Preparing {} for {}.".format(request, u_id))
 
         today_str = str(datetime.now().date())
