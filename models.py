@@ -1,13 +1,17 @@
-import cherrypy
+import logging
 import cv2
-import matplotlib
 import os
 import re
 import requests
+import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from datetime import datetime
+
+logging.basicConfig(filename="./logs/error.log",
+                    level=logging.DEBUG,
+                    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 class Frame(object):
@@ -53,8 +57,8 @@ class Gif(object):
             os.makedirs(frames_date_dir)
 
         frame_names_list = os.listdir(frames_date_dir)
-        cherrypy.log("Found {} frames files at {}.".format(len(frame_names_list),
-                                                           frames_date_dir))
+        logger.info("Found {} frames files at {}.".format(len(frame_names_list),
+                                                          frames_date_dir))
 
         for frame_name in frame_names_list:
             img = cv2.imread(os.path.join(frames_date_dir, frame_name), cv2.IMREAD_COLOR)
@@ -66,20 +70,20 @@ class Gif(object):
 
     def build(self, frames, title=''):
 
-        cherrypy.log("Started making new gif...")
+        logging.info("Started making new gif...")
         fig = plt.figure(figsize=[12.8, 7.2], frameon=False)
         ax = fig.add_axes([0, 0, 1, 1])
         ax.set_axis_off()
         ims = [(plt.imshow(x), ax.set_title(title)) for x in frames]
         im_ani = animation.ArtistAnimation(fig, ims, interval=100, repeat_delay=0, blit=True)
-        cherrypy.log("GIF successfully created.")
+        logger.info("GIF successfully created.")
         try:
             file_path = './data/gif/%s' % self.filename
             im_ani.save(file_path, writer='imagemagick', dpi=60)
-            cherrypy.log("GIF successfully saved. File size is {}kb.".format(
+            logger.info("GIF successfully saved. File size is {}kb.".format(
                 str(round(os.stat(file_path).st_size/1024, 0))))
-        except Exception:
-            cherrypy.log.error("Saving GIF failed with error ", traceback=True)
+        except Exception as e:
+            logger.error("Saving GIF failed with error '%s'." % e)
             return False
         plt.close()
         return True
