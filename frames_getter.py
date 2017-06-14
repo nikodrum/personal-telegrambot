@@ -7,7 +7,7 @@ import time
 logging.basicConfig(format=u'%(levelname)-8s [%(asctime)s] %(message)s',
                     level='DEBUG',
                     filename=u'./logs/frames_getter.log')
-logger = logging.getLogger(__name__)
+logger_getter = logging.getLogger(__name__)
 
 
 def set_constants():
@@ -21,14 +21,14 @@ def set_constants():
 
 if __name__ == '__main__':
 
-    logger.info("Script initialized.")
+    logger_getter.info("Script initialized.")
     set_constants()
 
     while True:
 
         if datetime.now().hour in INIT_HOURS:
 
-            logger.info("Getting new frame.")
+            logger_getter.info("Getting new frame.")
 
             try:
                 INIT_HOURS.remove(datetime.now().hour)
@@ -38,29 +38,29 @@ if __name__ == '__main__':
                 ))
                 file_path = frame.get()
                 if file_path in os.listdir('./data/frames/%s' % CURRENT_DAY):
-                    logger.info("Getting succeed.")
+                    logger_getter.info("Getting succeed.")
                 else:
-                    logger.info("Getting failed.")
+                    logger_getter.info("Getting failed.")
             except Exception as e:
-                logger.info("Failed downloading frame with error : '%s'" % e)
+                logger_getter.info("Failed downloading frame with error : '%s'" % e)
 
         if GIF_NEEDED and datetime.now().hour > 16:
 
-            logger.info("Started making GIF.")
+            logger_getter.info("Started making GIF.")
 
             gif = Gif(str(CURRENT_DAY))
             frames_list = gif.load_all_images(str(CURRENT_DAY))
-            logger.info("Got %d frames. " % len(frames_list))
+            logger_getter.info("Got %d frames. " % len(frames_list))
             if gif.build(frames=frames_list):
                 GIF_NEEDED = False
-                logger.info("Making succeed.")
+                logger_getter.info("Making succeed.")
 
         if CURRENT_DAY != datetime.now().date():
 
             try:
-                logger.info("Updating constants.")
+                logger_getter.info("Updating constants.")
                 set_constants()
                 os.makedirs('./data/frames/%s' % datetime.today().date())
             except Exception as e:
-                logger.info("Failed updating constants with error : '%s'" % e)
+                logger_getter.info("Failed updating constants with error : '%s'" % e)
         time.sleep(60 * 60)
