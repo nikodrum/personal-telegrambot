@@ -8,7 +8,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-logging.basicConfig(filename="./logs/error.log",
+logging.basicConfig(filename="./logs/models.log",
                     level=logging.DEBUG,
                     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger(__name__)

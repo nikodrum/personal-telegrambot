@@ -6,7 +6,7 @@ import time
 
 logging.basicConfig(format=u'%(levelname)-8s [%(asctime)s] %(message)s',
                     level='DEBUG',
-                    filename=u'./logs/frames_getter.logs')
+                    filename=u'./logs/frames_getter.log')
 logger = logging.getLogger(__name__)
 
 
