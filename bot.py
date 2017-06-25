@@ -1,70 +1,79 @@
-import cherrypy
+from flask import Flask, request
 import telebot
 import time
 from datetime import datetime
 from models import Frame, Speech, Gif
 from config import *
+from loggers import logger
+import os
 
-bot = telebot.TeleBot(os.environ['BOT_TOKEN'])
-bot.remove_webhook()
-bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
-                certificate=open(WEBHOOK_SSL_CERT, 'r'))
+# CONFIG
+TOKEN = os.environ['BOT_TOKEN']
+HOST = WEBHOOK_LISTEN
+PORT = WEBHOOK_PORT
+CERT = WEBHOOK_SSL_CERT
+CERT_KEY = WEBHOOK_SSL_PRIV
+
+bot = telebot.TeleBot(TOKEN)
+
+app = Flask(__name__)
+del app.logger.handlers[:]
+for hdlr in logger.handlers:
+    app.logger.addHandler(hdlr)
+
+context = (CERT, CERT_KEY)
 
 
-class BotServer(object):
-    @cherrypy.expose
-    def index(self):
-        if 'content-length' in cherrypy.request.headers and \
-                        'content-type' in cherrypy.request.headers and \
-                        cherrypy.request.headers['content-type'] == 'application/json':
-            length = int(cherrypy.request.headers['content-length'])
-            json_string = cherrypy.request.body.read(length).decode("utf-8")
-            update = telebot.types.Update.de_json(json_string)
-            bot.process_new_updates([update])
-            return "New message received."
+@app.route('/' + TOKEN, methods=['POST'])
+def process_updates():
+    length = int(request.headers['content-length'])
+    json_string = request.data.decode("utf-8")[:length]
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return 'OK'
+
+
+@bot.message_handler(content_types=["text"])
+def repeat_all_messages(message):
+    u_id = message.chat.id
+    app.logger.info("Processing request from {}.".format(u_id))
+
+    speech = Speech()
+    speech_request = speech.recognize(message.text)
+    app.logger.info("Preparing {} for {}.".format(speech_request, u_id))
+
+    today_str = str(datetime.now().date())
+    if speech_request == "frame":
+        frame = Frame(file_path="./data/temp/frame.jpg")
+        frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
+        frame_path = frame.get()
+
+        app.logger.info("File size is : %s" % os.stat(frame_path).st_size)
+        bot.send_photo(u_id, open(frame_path, 'rb'))
+        logger.info("Done with {}.".format(u_id))
+
+    if speech_request == "gif":
+        gif_path = "./data/{}/{}.gif".format(speech_request, today_str)
+        if os.path.exists(gif_path):
+            bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
         else:
-            raise cherrypy.HTTPError(403)
-
-    @staticmethod
-    @bot.message_handler(content_types=["text"])
-    def repeat_all_messages(message):
-        u_id = message.chat.id
-        cherrypy.log("Processing request from {}.".format(u_id))
-
-        speech = Speech()
-        request = speech.recognize(message)
-        cherrypy.log("Preparing {} for {}.".format(request, u_id))
-
-        today_str = str(datetime.now().date())
-        if request is "frame":
-            frame = Frame(file_path="./data/temp/frame.jpg")
-            frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
-            frame_path = frame.get()
-
-            cherrypy.log("File size is : " % os.stat(frame_path).st_size)
-            bot.send_photo(u_id, open(frame_path, 'rb'))
-
-        if request is "gif":
-            gif_path = "./data/{}/{}.gif".format(request, today_str)
-            if os.path.exists(gif_path):
+            gif = Gif(today_str)
+            if gif.create():
                 bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
             else:
-                gif = Gif(today_str)
-                if gif.create():
-                    bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
-                else:
-                    bot.send_message(u_id, "Не получается сохранить гифку 😭")
-
-cherrypy.config.update({
-    'server.socket_host': WEBHOOK_LISTEN,
-    'server.socket_port': WEBHOOK_PORT,
-    'server.ssl_module': 'builtin',
-    'server.ssl_certificate': WEBHOOK_SSL_CERT,
-    'server.ssl_private_key': WEBHOOK_SSL_PRIV,
-    'logs.screen': False,
-    'logs.error_file': "./logs/error.logs",
-    'logs.access_file': "./logs/access_file.logs"
-})
+                bot.send_message(u_id, "Не получается сохранить гифку 😭")
 
 
-cherrypy.quickstart(BotServer(), WEBHOOK_URL_PATH, {'/': {}})
+def set_webhook():
+    bot.set_webhook(url='https://%s:%s/%s' % (HOST, PORT, TOKEN),
+                    certificate=open(CERT, 'rb'))
+
+
+if __name__ == '__main__':
+    set_webhook()
+
+    time.sleep(5)
+    app.run(host='0.0.0.0',
+            port=PORT,
+            ssl_context=context,
+            debug=True)
