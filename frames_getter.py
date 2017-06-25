@@ -1,16 +1,42 @@
 from datetime import datetime
 from models import Gif, Frame
-import os
 from loggers import logger
+from pytz import timezone
+import os
+import json
 import time
+import requests
+
+
+def get_sunset_sunrise():
+
+    resp = requests.get(
+        "http://api.openweathermap.org/data/2.5/weather?q=Kiev&APPID={}"
+            .format(os.environ['WEATHER_KEY'])
+    )
+    weather_data = json.loads(resp.content.decode())
+
+    sunrise_local = datetime.fromtimestamp(weather_data['sys']['sunrise'])\
+        .replace(tzinfo=timezone('Europe/Kiev'))
+    sunrise_utc = sunrise_local.astimezone(timezone('UTC'))
+
+    sunset_local = datetime.fromtimestamp(weather_data['sys']['sunset'])\
+        .replace(tzinfo=timezone('Europe/Kiev'))
+    sunset_utc = sunset_local.astimezone(timezone('UTC'))
+
+    return sunrise_utc, sunset_utc
 
 
 def set_constants():
+    sun_info = get_sunset_sunrise()
+
     global DAILY_CONST
     DAILY_CONST = {
-        "INIT_HOURS": [h - 3 for h in range(9, 19)],
+#        "INIT_HOURS": [h - 3 for h in range(9, 19)],
         "CURRENT_DAY": str(datetime.now().date()),
-        "GIF_NEEDED": True
+        "GIF_NEEDED": True,
+        "SUN_RISE": sun_info[0],
+        "SUN_SET": sun_info[1]
     }
     folder_path = './data/frames/%s' % datetime.today().date()
     if not os.path.exists(folder_path):
@@ -23,8 +49,11 @@ if __name__ == '__main__':
     set_constants()
 
     while True:
+        now_date = datetime.utcnow()
+        now_date = now_date.astimezone(timezone('UTC'))
+        logger.info(f"Now is {now_date}")
 
-        if datetime.now().hour in DAILY_CONST["INIT_HOURS"]:
+        if DAILY_CONST['SUN_RISE'] > now_date > DAILY_CONST["SUN_SET"]:
 
             logger.info("Getting new frame.")
 
@@ -34,9 +63,9 @@ if __name__ == '__main__':
                     int(time.time())
                 ))
                 file_path = frame.get()
-                if file_path.split("/")[-1] in os.listdir('./data/frames/%s' % DAILY_CONST["CURRENT_DAY"]):
+                if file_path.split("/")[-1] in os.listdir(f'./data/frames/{DAILY_CONST["CURRENT_DAY"]}'):
                     logger.info("Getting succeed. Saved at '%s'" % file_path)
-                    DAILY_CONST["INIT_HOURS"].remove(datetime.now().hour)
+#                    DAILY_CONST["INIT_HOURS"].remove(datetime.now().hour)
                 else:
                     logger.warning("Getting failed.")
             except Exception as e:
@@ -51,7 +80,7 @@ if __name__ == '__main__':
             logger.info("Got %d frames. " % len(frames_list))
             gif_name = gif.build(frames=frames_list)
             if gif_name:
-                GIF_NEEDED = False
+                DAILY_CONST["GIF_NEEDED"] = False
                 logger.info("Making succeed. Saved at %s" % gif_name)
 
         if DAILY_CONST["CURRENT_DAY"] != str(datetime.now().date()):
@@ -62,3 +91,4 @@ if __name__ == '__main__':
             except Exception as e:
                 logger.info("Failed updating constants with error : '%s'" % e)
         time.sleep(60 * 60)
+
