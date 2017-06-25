@@ -1,7 +1,10 @@
 from flask import Flask, request
-from config import *
 import telebot
 import time
+from datetime import datetime
+from models import Frame, Speech, Gif
+from config import *
+from loggers import logger
 
 # CONFIG
 TOKEN = os.environ['BOT_TOKEN']
@@ -12,18 +15,14 @@ CERT_KEY = WEBHOOK_SSL_PRIV
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
+app.logger.addHandler(logger.handlers[0])
 context = (CERT, CERT_KEY)
 
 
-@app.route('/')
-def hello():
-    return 'Hello World!'
-
-
 @app.route('/' + TOKEN, methods=['POST'])
-def webhook():
+def process_updates():
     length = int(request.headers['content-length'])
-    json_string = request.body.read(length).decode("utf-8")
+    json_string = request.data.decode("utf-8")[:length]
     update = telebot.types.Update.de_json(json_string)
     bot.process_new_updates([update])
     return 'OK'
@@ -31,7 +30,32 @@ def webhook():
 
 @bot.message_handler(content_types=["text"])
 def repeat_all_messages(message):
-    bot.send_message(chat_id=message.chat.id, text='Hello, there')
+    u_id = message.chat.id
+    app.logger.info("Processing request from {}.".format(u_id))
+
+    speech = Speech()
+    speech_request = speech.recognize(message)
+    app.logger.info("Preparing {} for {}.".format(speech_request, u_id))
+
+    today_str = str(datetime.now().date())
+    if speech_request is "frame":
+        frame = Frame(file_path="./data/temp/frame.jpg")
+        frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
+        frame_path = frame.get()
+
+        app.logger.info("File size is : " % os.stat(frame_path).st_size)
+        bot.send_photo(u_id, open(frame_path, 'rb'))
+
+    if speech_request is "gif":
+        gif_path = "./data/{}/{}.gif".format(speech_request, today_str)
+        if os.path.exists(gif_path):
+            bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
+        else:
+            gif = Gif(today_str)
+            if gif.create():
+                bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
+            else:
+                bot.send_message(u_id, "Не получается сохранить гифку 😭")
 
 
 def set_webhook():

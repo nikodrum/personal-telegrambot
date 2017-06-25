@@ -21,7 +21,7 @@ LOGGING = {
             "level": "DEBUG",
             "formatter": "precise",
             "filename": './logs/stash.log',
-            "maxBytes": 10000000,
+            "maxBytes": 1024*1024*100,
         }
     },
     'loggers': {
