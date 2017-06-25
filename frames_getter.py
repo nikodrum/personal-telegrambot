@@ -24,19 +24,19 @@ if __name__ == '__main__':
 
     while True:
 
-        if True:#datetime.now().hour in DAILY_CONST["INIT_HOURS"]:
+        if datetime.now().hour in DAILY_CONST["INIT_HOURS"]:
 
             logger.info("Getting new frame.")
 
             try:
-                frame = Frame(file_path="./data/frame/{}/{}.jpg".format(
+                frame = Frame(file_path="./data/frames/{}/{}.jpg".format(
                     DAILY_CONST["CURRENT_DAY"],
                     int(time.time())
                 ))
                 file_path = frame.get()
-                if file_path in os.listdir('./data/frames/%s' % DAILY_CONST["CURRENT_DAY"]):
+                if file_path.split("/")[-1] in os.listdir('./data/frames/%s' % DAILY_CONST["CURRENT_DAY"]):
                     logger.info("Getting succeed. Saved at '%s'" % file_path)
-                    #DAILY_CONST["INIT_HOURS"].remove(datetime.now().hour)
+                    DAILY_CONST["INIT_HOURS"].remove(datetime.now().hour)
                 else:
                     logger.warning("Getting failed.")
             except Exception as e:
