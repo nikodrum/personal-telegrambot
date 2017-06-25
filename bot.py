@@ -1,9 +1,9 @@
 import cherrypy
 import telebot
+import time
 from datetime import datetime
 from models import Frame, Speech, Gif
 from config import *
-from loggers import logger
 
 bot = telebot.TeleBot(os.environ['BOT_TOKEN'])
 bot.remove_webhook()
@@ -29,11 +29,11 @@ class BotServer(object):
     @bot.message_handler(content_types=["text"])
     def repeat_all_messages(message):
         u_id = message.chat.id
-        logger.info("Processing request from {}.".format(u_id))
+        cherrypy.log("Processing request from {}.".format(u_id))
 
         speech = Speech()
         request = speech.recognize(message)
-        logger.info("Preparing {} for {}.".format(request, u_id))
+        cherrypy.log("Preparing {} for {}.".format(request, u_id))
 
         today_str = str(datetime.now().date())
         if request is "frame":
@@ -41,7 +41,7 @@ class BotServer(object):
             frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
             frame_path = frame.get()
 
-            logger.info("File size is : " % os.stat(frame_path).st_size)
+            cherrypy.log("File size is : " % os.stat(frame_path).st_size)
             bot.send_photo(u_id, open(frame_path, 'rb'))
 
         if request is "gif":
@@ -61,9 +61,10 @@ cherrypy.config.update({
     'server.ssl_module': 'builtin',
     'server.ssl_certificate': WEBHOOK_SSL_CERT,
     'server.ssl_private_key': WEBHOOK_SSL_PRIV,
-    'logs.error_log.propagate': False,
-    'logs.access_log.propagate': False
+    'logs.screen': False,
+    'logs.error_file': "./logs/error.logs",
+    'logs.access_file': "./logs/access_file.logs"
 })
 
-cherrypy.logs
+
 cherrypy.quickstart(BotServer(), WEBHOOK_URL_PATH, {'/': {}})
