@@ -21,6 +21,7 @@ class Frame(object):
             for chunk in r.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
+        logger.info("Video downloaded and saved.")
         return True
 
     def get(self):
@@ -34,6 +35,7 @@ class Frame(object):
                 break
             count += 1
         cap.release()
+        logger.info("Frame saved at '{}' ".format(self.file_path))
         return self.file_path
 
 

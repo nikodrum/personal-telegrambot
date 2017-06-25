@@ -14,8 +14,12 @@ CERT = WEBHOOK_SSL_CERT
 CERT_KEY = WEBHOOK_SSL_PRIV
 
 bot = telebot.TeleBot(TOKEN)
+
 app = Flask(__name__)
-app.logger.addHandler(logger.handlers[0])
+del app.logger.handlers[:]
+for hdlr in logger.handlers:
+    app.logger.addHandler(hdlr)
+
 context = (CERT, CERT_KEY)
 
 
@@ -38,7 +42,7 @@ def repeat_all_messages(message):
     app.logger.info("Preparing {} for {}.".format(speech_request, u_id))
 
     today_str = str(datetime.now().date())
-    if speech_request is "frame":
+    if speech_request == "frame":
         frame = Frame(file_path="./data/temp/frame.jpg")
         frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
         frame_path = frame.get()
@@ -46,7 +50,7 @@ def repeat_all_messages(message):
         app.logger.info("File size is : " % os.stat(frame_path).st_size)
         bot.send_photo(u_id, open(frame_path, 'rb'))
 
-    if speech_request is "gif":
+    if speech_request == "gif":
         gif_path = "./data/{}/{}.gif".format(speech_request, today_str)
         if os.path.exists(gif_path):
             bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
