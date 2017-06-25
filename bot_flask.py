@@ -5,6 +5,7 @@ from datetime import datetime
 from models import Frame, Speech, Gif
 from config import *
 from loggers import logger
+import os
 
 # CONFIG
 TOKEN = os.environ['BOT_TOKEN']
@@ -38,7 +39,7 @@ def repeat_all_messages(message):
     app.logger.info("Processing request from {}.".format(u_id))
 
     speech = Speech()
-    speech_request = speech.recognize(message)
+    speech_request = speech.recognize(message.text)
     app.logger.info("Preparing {} for {}.".format(speech_request, u_id))
 
     today_str = str(datetime.now().date())
@@ -47,8 +48,9 @@ def repeat_all_messages(message):
         frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
         frame_path = frame.get()
 
-        app.logger.info("File size is : " % os.stat(frame_path).st_size)
+        app.logger.info("File size is : %s" % os.stat(frame_path).st_size)
         bot.send_photo(u_id, open(frame_path, 'rb'))
+        logger.info("Done with {}.".format(u_id))
 
     if speech_request == "gif":
         gif_path = "./data/{}/{}.gif".format(speech_request, today_str)
