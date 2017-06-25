@@ -1,6 +1,7 @@
 from flask import Flask, request
 from config import *
-import telegram
+import telebot
+import time
 
 # CONFIG
 TOKEN = os.environ['BOT_TOKEN']
@@ -9,7 +10,7 @@ PORT = WEBHOOK_PORT
 CERT = WEBHOOK_SSL_CERT
 CERT_KEY = WEBHOOK_SSL_PRIV
 
-bot = telegram.Bot(TOKEN)
+bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 context = (CERT, CERT_KEY)
 
@@ -21,10 +22,16 @@ def hello():
 
 @app.route('/' + TOKEN, methods=['POST'])
 def webhook():
-    update = telegram.update.Update.de_json(request.get_json(force=True))
-    bot.sendMessage(chat_id=update.message.chat_id, text='Hello, there')
-
+    length = int(request.headers['content-length'])
+    json_string = request.body.read(length).decode("utf-8")
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
     return 'OK'
+
+
+@bot.message_handler(content_types=["text"])
+def repeat_all_messages(message):
+    bot.send_message(chat_id=message.chat.id, text='Hello, there')
 
 
 def set_webhook():
@@ -35,6 +42,7 @@ def set_webhook():
 if __name__ == '__main__':
     set_webhook()
 
+    time.sleep(5)
     app.run(host='0.0.0.0',
             port=PORT,
             ssl_context=context,
