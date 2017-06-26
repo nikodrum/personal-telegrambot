@@ -57,10 +57,12 @@ def repeat_all_messages(message):
         if os.path.exists(gif_path):
             bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
         else:
-            gif = Gif(today_str)
-            if gif.create():
-                bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
-            else:
+            if not os.path.exists("./data/gif/{}.gif".format(today_str)):
+                gif = Gif(today_str)
+                gif.create()
+            try:
+                bot.send_document(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
+            finally:
                 bot.send_message(u_id, "Не получается сохранить гифку 😭")
 
 
