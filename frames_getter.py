@@ -51,7 +51,7 @@ if __name__ == '__main__':
     while True:
         now_date = datetime.utcnow()
         now_date = now_date.astimezone(timezone('UTC'))
-        logger.info(f"Now is {now_date}")
+        logger.info("Now is {}".format(now_date))
 
         if DAILY_CONST['SUN_RISE'] > now_date > DAILY_CONST["SUN_SET"]:
 
@@ -69,6 +69,7 @@ if __name__ == '__main__':
 #                    DAILY_CONST["INIT_HOURS"].remove(datetime.now().hour)
                 else:
                     logger.warning("Getting failed.")
+                del frame
             except Exception as e:
                 logger.warning("Failed downloading frame with error : '%s'" % e)
 
@@ -83,6 +84,7 @@ if __name__ == '__main__':
             if gif_name:
                 DAILY_CONST["GIF_NEEDED"] = False
                 logger.info("Making succeed. Saved at %s" % gif_name)
+                del gif
 
         if DAILY_CONST["CURRENT_DAY"] != str(datetime.now().date()):
 
