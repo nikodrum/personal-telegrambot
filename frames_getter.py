@@ -62,6 +62,7 @@ if __name__ == '__main__':
                     DAILY_CONST["CURRENT_DAY"],
                     int(time.time())
                 ))
+                frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
                 file_path = frame.get()
                 if file_path.split("/")[-1] in os.listdir(f'./data/frames/{DAILY_CONST["CURRENT_DAY"]}'):
                     logger.info("Getting succeed. Saved at '%s'" % file_path)

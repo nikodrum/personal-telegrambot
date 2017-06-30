@@ -55,7 +55,7 @@ class Gif(object):
         if not os.path.exists(frames_date_dir):
             os.makedirs(frames_date_dir)
 
-        frame_names_list = os.listdir(frames_date_dir)
+        frame_names_list = sorted(os.listdir(frames_date_dir))
         logger.info("Found {} frames files at {}.".format(len(frame_names_list),
                                                           frames_date_dir))
 
