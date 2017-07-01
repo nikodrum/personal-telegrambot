@@ -52,7 +52,7 @@ if __name__ == '__main__':
         now_date = now_date.replace(tzinfo=timezone('UTC'))
         logger.info("Now is {}".format(now_date))
 
-        if DAILY_CONST['SUN_RISE'] > now_date > DAILY_CONST["SUN_SET"]:
+        if DAILY_CONST['SUN_RISE'] < now_date < DAILY_CONST["SUN_SET"]:
 
             logger.info("Getting new frame.")
 
