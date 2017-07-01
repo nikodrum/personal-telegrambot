@@ -32,7 +32,6 @@ def set_constants():
 
     global DAILY_CONST
     DAILY_CONST = {
-#        "INIT_HOURS": [h - 3 for h in range(9, 19)],
         "CURRENT_DAY": str(datetime.now().date()),
         "GIF_NEEDED": True,
         "SUN_RISE": sun_info[0],
@@ -50,7 +49,7 @@ if __name__ == '__main__':
 
     while True:
         now_date = datetime.utcnow()
-        now_date = now_date.astimezone(timezone('UTC'))
+        now_date = now_date.replace(tzinfo=timezone('UTC'))
         logger.info("Now is {}".format(now_date))
 
         if DAILY_CONST['SUN_RISE'] > now_date > DAILY_CONST["SUN_SET"]:
@@ -64,9 +63,8 @@ if __name__ == '__main__':
                 ))
                 frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
                 file_path = frame.get()
-                if file_path.split("/")[-1] in os.listdir(f'./data/frames/{DAILY_CONST["CURRENT_DAY"]}'):
+                if file_path.split("/")[-1] in os.listdir('./data/frames/%s' % DAILY_CONST["CURRENT_DAY"]):
                     logger.info("Getting succeed. Saved at '%s'" % file_path)
-#                    DAILY_CONST["INIT_HOURS"].remove(datetime.now().hour)
                 else:
                     logger.warning("Getting failed.")
                 del frame
@@ -93,5 +91,5 @@ if __name__ == '__main__':
                 set_constants()
             except Exception as e:
                 logger.info("Failed updating constants with error : '%s'" % e)
-        time.sleep(60 * 60)
+        time.sleep(60 * 30)
 
