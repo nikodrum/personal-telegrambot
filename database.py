@@ -1,6 +1,5 @@
 import sqlite3
 import os
-import time
 from datetime import datetime
 
 
@@ -28,8 +27,9 @@ def init_database(name):
 class SQLighter:
 
     def __init__(self, database):
-        if os.path.exists("./data/base/{}.db".format(database)):
-            self.connection = sqlite3.connect(database)
+        database_path = "./data/{}".format(database)
+        if os.path.exists(database_path):
+            self.connection = sqlite3.connect(database_path)
         else:
             init_database(name="bot")
         self.cursor = self.connection.cursor()
@@ -50,7 +50,7 @@ class SQLighter:
         """ Put user. """
         with self.connection:
             self.cursor.execute(
-                'INSERT INTO users VALUES (?,?)', (str(datetime.now()), u_id, False)
+                'INSERT INTO users VALUES (?,?,?)', (str(datetime.now()), u_id, False)
             ).fetchall()
             self.connection.commit()
 
