@@ -12,13 +12,13 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'formatter': 'precise',
             'stream': 'ext://sys.stdout'
         },
         'fileHandler': {
             "class": "logging.handlers.RotatingFileHandler",
-            "level": "ERROR",
+            "level": "DEBUG",
             "formatter": "precise",
             "filename": './logs/stash.log',
             "maxBytes": 1024*1024*100,
@@ -26,7 +26,7 @@ LOGGING = {
     },
     'loggers': {
         'root': {
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'handlers': ['console', 'fileHandler']
         }
     }

@@ -36,6 +36,8 @@ class Frame(object):
             count += 1
         cap.release()
         logger.info("Frame saved at '{}' ".format(self.file_path))
+        os.remove('./data/temp/video.mp4')
+        logger.info("Video file was deleted.")
         return self.file_path
 
 

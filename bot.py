@@ -66,6 +66,11 @@ def repeat_all_messages(message):
                 bot.send_message(u_id, "Не получается сохранить гифку 😭")
 
 
+@app.errorhandler(500)
+def internal_error(exception):
+    logger.error(exception)
+
+
 def set_webhook():
     bot.set_webhook(url='https://%s:%s/%s' % (HOST, PORT, TOKEN),
                     certificate=open(CERT, 'rb'))
