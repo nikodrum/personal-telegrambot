@@ -55,7 +55,7 @@ def repeat_all_messages(message):
     if speech_request == "gif":
         gif_path = "./data/{}/{}.gif".format(speech_request, today_str)
         if os.path.exists(gif_path):
-            bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
+            bot.send_document(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
         else:
             if not os.path.exists("./data/gif/{}.gif".format(today_str)):
                 gif = Gif(today_str)

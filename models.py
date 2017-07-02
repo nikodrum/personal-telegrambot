@@ -62,7 +62,7 @@ class Gif(object):
         for frame_name in frame_names_list:
             img = cv2.imread(os.path.join(frames_date_dir, frame_name), cv2.IMREAD_COLOR)
             if img is not None:
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
                 frames.append(img)
 
         return frames
@@ -70,7 +70,7 @@ class Gif(object):
     def build(self, frames, title=''):
 
         logger.info("Started making new gif...")
-        fig = plt.figure(figsize=[12.8, 7.2], frameon=False)
+        fig = plt.figure(figsize=[12.8*1.25, 7.2*1.25], frameon=False)
         ax = fig.add_axes([0, 0, 1, 1])
         ax.set_axis_off()
         ims = [(plt.imshow(x), ax.set_title(title)) for x in frames]
