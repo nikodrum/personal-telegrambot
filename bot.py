@@ -53,17 +53,19 @@ def repeat_all_messages(message):
         logger.info("Done with {}.".format(u_id))
 
     if speech_request == "gif":
-        gif_path = "./data/{}/{}.gif".format(speech_request, today_str)
-        if os.path.exists(gif_path):
-            bot.send_photo(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
-        else:
-            if not os.path.exists("./data/gif/{}.gif".format(today_str)):
-                gif = Gif(today_str)
-                gif.create()
-            try:
-                bot.send_document(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
-            finally:
-                bot.send_message(u_id, "Не получается сохранить гифку 😭")
+        if not os.path.exists("./data/gif/{}.gif".format(today_str)):
+            gif = Gif(today_str)
+            gif.create()
+        try:
+            bot.send_document(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
+        except Exception as e:
+            logger("Failed to send GIF with error %s" % e)
+            bot.send_message(u_id, "Не получается сохранить гифку 😭")
+
+
+@app.errorhandler(500)
+def internal_error(exception):
+    logger.error(exception)
 
 
 def set_webhook():

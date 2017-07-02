@@ -26,7 +26,7 @@ LOGGING = {
     },
     'loggers': {
         'root': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'handlers': ['console', 'fileHandler']
         }
     }
