@@ -6,6 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import numpy as np
 from loggers import logger
 
 
@@ -65,22 +66,23 @@ class Gif(object):
             img = cv2.imread(os.path.join(frames_date_dir, frame_name), cv2.IMREAD_COLOR)
             if img is not None:
                 img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-                frames.append(img)
+                if img.reshape(1280*720, 3).mean(axis=1).std() > 60:
+                    frames.append(img)
 
         return frames
 
     def build(self, frames, title=''):
 
         logger.info("Started making new gif...")
-        fig = plt.figure(figsize=[12.8*1.25, 7.2*1.25], frameon=False)
+        fig = plt.figure(figsize=[12.8, 7.2], frameon=False)
         ax = fig.add_axes([0, 0, 1, 1])
         ax.set_axis_off()
         ims = [(plt.imshow(x), ax.set_title(title)) for x in frames]
-        im_ani = animation.ArtistAnimation(fig, ims, interval=100, repeat_delay=0, blit=True)
+        im_ani = animation.ArtistAnimation(fig, ims, interval=125, repeat_delay=0)
         logger.info("GIF successfully created.")
         try:
             file_path = './data/gif/' + self.filename
-            im_ani.save(file_path, writer='imagemagick', dpi=60)
+            im_ani.save(file_path, writer='imagemagick', dpi=45)
             logger.info("GIF successfully saved. File size is {}kb.".format(
                 str(round(os.stat(file_path).st_size/1024, 0))))
         except Exception as e:
