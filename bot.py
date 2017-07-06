@@ -38,7 +38,7 @@ def process_updates():
 def repeat_all_messages(message):
     u_id = message.chat.id
 
-    db_worker = SQLighter(database="bot")
+    db_worker = SQLighter(database="bot.db")
     if not db_worker.check_user(u_id=u_id):
         db_worker.post_user(u_id=u_id)
         app.logger.info("Added user {} to db.".format(u_id))
