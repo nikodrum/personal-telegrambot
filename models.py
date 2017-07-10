@@ -6,7 +6,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import numpy as np
 from loggers import logger
 
 
@@ -74,15 +73,15 @@ class Gif(object):
     def build(self, frames, title=''):
 
         logger.info("Started making new gif...")
-        fig = plt.figure(figsize=[12.8, 7.2], frameon=False)
+        fig = plt.figure(figsize=[12.8/2, 7.2/2], frameon=False)
         ax = fig.add_axes([0, 0, 1, 1])
         ax.set_axis_off()
         ims = [(plt.imshow(x), ax.set_title(title)) for x in frames]
-        im_ani = animation.ArtistAnimation(fig, ims, interval=125, repeat_delay=0)
+        im_ani = animation.ArtistAnimation(fig, ims, interval=100, repeat_delay=200)
         logger.info("GIF successfully created.")
         try:
             file_path = './data/gif/' + self.filename
-            im_ani.save(file_path, writer='imagemagick', dpi=45)
+            im_ani.save(file_path, writer='imagemagick', dpi=90)
             logger.info("GIF successfully saved. File size is {}kb.".format(
                 str(round(os.stat(file_path).st_size/1024, 0))))
         except Exception as e:

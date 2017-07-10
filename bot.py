@@ -5,6 +5,7 @@ from datetime import datetime
 from models import Frame, Speech, Gif
 from config import *
 from loggers import logger
+from database import SQLighter
 import os
 
 # CONFIG
@@ -36,10 +37,14 @@ def process_updates():
 @bot.message_handler(content_types=["text"])
 def repeat_all_messages(message):
     u_id = message.chat.id
-    app.logger.info("Processing request from {}.".format(u_id))
+
+    db_worker = SQLighter(database="bot.db")
+    if not db_worker.check_user(u_id=u_id):
+        db_worker.post_user(u_id=u_id)
+        app.logger.info("Added user {} to db.".format(u_id))
 
     speech = Speech()
-    speech_request = speech.recognize(message.text)
+    speech_request = speech.recognize(message.text.lower())
     app.logger.info("Preparing {} for {}.".format(speech_request, u_id))
 
     today_str = str(datetime.now().date())
@@ -49,18 +54,21 @@ def repeat_all_messages(message):
         frame_path = frame.get()
 
         app.logger.info("File size is : %s" % os.stat(frame_path).st_size)
-        bot.send_photo(u_id, open(frame_path, 'rb'))
+        msg = bot.send_photo(u_id, open(frame_path, 'rb'))
         logger.info("Done with {}.".format(u_id))
+        db_worker.post_file(file_id=msg.photo.file_id, file_type="frame")
 
     if speech_request == "gif":
         if not os.path.exists("./data/gif/{}.gif".format(today_str)):
             gif = Gif(today_str)
             gif.create()
         try:
-            bot.send_document(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
+            msg = bot.send_document(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
+            db_worker.post_file(file_id=msg.document.file_id, file_type="gif")
         except Exception as e:
-            logger("Failed to send GIF with error %s" % e)
+            app.logger("Failed to send GIF with error %s" % e)
             bot.send_message(u_id, "Не получается сохранить гифку 😭")
+    db_worker.close()
 
 
 @app.errorhandler(500)
