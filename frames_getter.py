@@ -42,54 +42,59 @@ def set_constants():
         os.makedirs(folder_path)
     logger.info("Constants set to {}".format(str(DAILY_CONST)))
 
+
+def run_conditions():
+    now_date = datetime.utcnow()
+    now_date = now_date.replace(tzinfo=timezone('UTC'))
+    logger.info("Now is {}".format(now_date))
+
+    if DAILY_CONST['SUN_RISE'] < now_date < DAILY_CONST["SUN_SET"]:
+
+        logger.info("Getting new frame.")
+
+        try:
+            frame = Frame(file_path="./data/frames/{}/{}.jpg".format(
+                DAILY_CONST["CURRENT_DAY"],
+                int(time.time())
+            ))
+            frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
+            file_path = frame.get()
+            if file_path.split("/")[-1] in os.listdir('./data/frames/%s' % DAILY_CONST["CURRENT_DAY"]):
+                logger.info("Getting succeed. Saved at '%s'" % file_path)
+            else:
+                logger.warning("Getting failed.")
+            del frame
+        except Exception as e:
+            logger.warning("Failed downloading frame with error : '%s'" % e)
+
+    if DAILY_CONST["GIF_NEEDED"] and datetime.now().hour > 16:
+
+        logger.info("Started making GIF.")
+
+        gif = Gif(DAILY_CONST["CURRENT_DAY"])
+        frames_list = gif.load_all_images(DAILY_CONST["CURRENT_DAY"])
+        logger.info("Got %d frames. " % len(frames_list))
+        gif_name = gif.build(frames=frames_list)
+        if gif_name:
+            DAILY_CONST["GIF_NEEDED"] = False
+            logger.info("Making succeed. Saved at %s" % gif_name)
+            del gif
+
+    if DAILY_CONST["CURRENT_DAY"] != str(datetime.now().date()):
+
+        try:
+            logger.info("Updating constants.")
+            set_constants()
+        except Exception as e:
+            logger.info("Failed updating constants with error : '%s'" % e)
+
+
 if __name__ == '__main__':
 
     logger.info("Script initialized.")
     set_constants()
 
     while True:
-        now_date = datetime.utcnow()
-        now_date = now_date.replace(tzinfo=timezone('UTC'))
-        logger.info("Now is {}".format(now_date))
-
-        if DAILY_CONST['SUN_RISE'] < now_date < DAILY_CONST["SUN_SET"]:
-
-            logger.info("Getting new frame.")
-
-            try:
-                frame = Frame(file_path="./data/frames/{}/{}.jpg".format(
-                    DAILY_CONST["CURRENT_DAY"],
-                    int(time.time())
-                ))
-                frame.download_video("http://vs8.videoprobki.com.ua/tvukrbud/cam17.mp4")
-                file_path = frame.get()
-                if file_path.split("/")[-1] in os.listdir('./data/frames/%s' % DAILY_CONST["CURRENT_DAY"]):
-                    logger.info("Getting succeed. Saved at '%s'" % file_path)
-                else:
-                    logger.warning("Getting failed.")
-                del frame
-            except Exception as e:
-                logger.warning("Failed downloading frame with error : '%s'" % e)
-
-        if DAILY_CONST["GIF_NEEDED"] and datetime.now().hour > 16:
-
-            logger.info("Started making GIF.")
-
-            gif = Gif(DAILY_CONST["CURRENT_DAY"])
-            frames_list = gif.load_all_images(DAILY_CONST["CURRENT_DAY"])
-            logger.info("Got %d frames. " % len(frames_list))
-            gif_name = gif.build(frames=frames_list)
-            if gif_name:
-                DAILY_CONST["GIF_NEEDED"] = False
-                logger.info("Making succeed. Saved at %s" % gif_name)
-                del gif
-
-        if DAILY_CONST["CURRENT_DAY"] != str(datetime.now().date()):
-
-            try:
-                logger.info("Updating constants.")
-                set_constants()
-            except Exception as e:
-                logger.info("Failed updating constants with error : '%s'" % e)
+        run_conditions()
         time.sleep(60 * 30)
 
