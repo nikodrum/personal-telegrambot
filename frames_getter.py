@@ -16,14 +16,8 @@ def get_sunset_sunrise():
     )
     weather_data = json.loads(resp.content.decode())
 
-    sunrise_local = datetime.fromtimestamp(weather_data['sys']['sunrise'])\
-        .replace(tzinfo=timezone('Europe/Kiev'))
-    sunrise_utc = sunrise_local.astimezone(timezone('UTC'))
-
-    sunset_local = datetime.fromtimestamp(weather_data['sys']['sunset'])\
-        .replace(tzinfo=timezone('Europe/Kiev'))
-    sunset_utc = sunset_local.astimezone(timezone('UTC'))
-
+    sunrise_utc = datetime.fromtimestamp(weather_data['sys']['sunrise'])
+    sunset_utc = datetime.fromtimestamp(weather_data['sys']['sunset'])
     return sunrise_utc, sunset_utc
 
 
