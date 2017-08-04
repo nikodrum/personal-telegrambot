@@ -44,7 +44,7 @@ def repeat_all_messages(message):
         app.logger.info("Added user {} to db.".format(u_id))
 
     speech = Speech()
-    speech_request = speech.recognize(message.text.lower())
+    speech_request = speech.recognize_what(message.text.lower())
     app.logger.info("Preparing {} for {}.".format(speech_request, u_id))
 
     today_str = str(datetime.now().date())

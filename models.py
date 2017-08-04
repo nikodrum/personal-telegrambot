@@ -105,8 +105,22 @@ class Speech(object):
         pass
 
     @staticmethod
-    def recognize(message):
+    def recognize_what(message):
         if re.findall(r"гиф", message):
             return "gif"
         else:
             return "frame"
+
+    @staticmethod
+    def recognize_which(message):
+        if re.findall(r"новую", message):
+            return "new"
+        elif re.findall(r"послед", message):
+            return "last"
+
+    @staticmethod
+    def recognize_when(message):
+        if re.findall(r"новую", message):
+            return "new"
+        elif re.findall(r"послед", message):
+            return "last"
