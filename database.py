@@ -66,9 +66,9 @@ class SQLighter:
         """Get gif file id if exists."""
         with self.connection:
             if date:
-                day = date.strptime(date, "%Y-%m-%d").date()
-                next_day = date + timedelta(days=1)
-                file_id = self.cursor.execute(
+                day = datetime.strptime(date, "%Y-%m-%d").date()
+                next_day = day + timedelta(days=1)
+                file_ids_tuple = self.cursor.execute(
                     """SELECT file_id FROM files 
                        WHERE inserted_date = (
                           SELECT MAX(inserted_date) FROM files 
@@ -76,17 +76,17 @@ class SQLighter:
                              type='gif'
                     """,
                     (str(day), str(next_day), )
-                ).fetchall()[0]
+                ).fetchall()
             else:
-                file_id = self.cursor.execute(
+                file_ids_tuple = self.cursor.execute(
                     """SELECT file_id FROM files
                        WHERE inserted_date = ( 
                             SELECT MAX(inserted_date) FROM files) AND
                              type='gif'
                     """
-                ).fetchall()[0]
-            if file_id:
-                return file_id
+                ).fetchall()
+        if len(file_ids_tuple) != 0:
+            return file_ids_tuple[0]
         return None
 
     def close(self):
