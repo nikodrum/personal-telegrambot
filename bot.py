@@ -60,11 +60,18 @@ def repeat_all_messages(message):
 
     if speech_request == "gif":
         if not os.path.exists("./data/gif/{}.gif".format(today_str)):
-            gif = Gif(today_str)
-            gif.create()
+            bot.send_message(u_id, "Гифка будет готова после захода солнца!")
+            #gif = Gif(today_str)
+            #gif.create()
         try:
-            msg = bot.send_document(u_id, open('./data/gif/%s.gif' % today_str, 'rb'))
-            db_worker.post_file(file_id=msg.document.file_id, file_type="gif")
+            gif_id = db_worker.get_gif_id(today_str)
+            if gif_id:
+                gif_data = gif_id
+                bot.send_document(chat_id=u_id, data=gif_data)
+            else:
+                gif_data = open('./data/gif/%s.gif' % today_str, 'rb')
+                msg = bot.send_document(chat_id=u_id, data=gif_data)
+                db_worker.post_file(file_id=msg.document.file_id, file_type="gif")
         except Exception as e:
             app.logger("Failed to send GIF with error %s" % e)
             bot.send_message(u_id, "Не получается сохранить гифку 😭")

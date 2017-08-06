@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, date
 
 
 def init_database(name):
@@ -61,6 +61,33 @@ class SQLighter:
                 'INSERT INTO files VALUES (?,?,?,?)', (str(datetime.now()), file_id, file_type, None)
             ).fetchall()
             self.connection.commit()
+
+    def get_gif_id(self, date=None):
+        """Get gif file id if exists."""
+        with self.connection:
+            if date:
+                day = date.strptime(date, "%Y-%m-%d").date()
+                next_day = date + timedelta(days=1)
+                file_id = self.cursor.execute(
+                    """SELECT file_id FROM files 
+                       WHERE inserted_date = (
+                          SELECT MAX(inserted_date) FROM files 
+                          WHERE inserted_date > ? AND inserted_date < ? ) AND
+                             type='gif'
+                    """,
+                    (str(day), str(next_day), )
+                ).fetchall()[0]
+            else:
+                file_id = self.cursor.execute(
+                    """SELECT file_id FROM files
+                       WHERE inserted_date = ( 
+                            SELECT MAX(inserted_date) FROM files) AND
+                             type='gif'
+                    """
+                ).fetchall()[0]
+            if file_id:
+                return file_id
+        return None
 
     def close(self):
         """ Close connection with DB """
