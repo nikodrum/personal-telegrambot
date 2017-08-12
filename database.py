@@ -25,7 +25,6 @@ def init_database(name):
 
 
 class SQLighter:
-
     def __init__(self, database):
         database_path = "./data/{}".format(database)
         if os.path.exists(database_path):
@@ -75,7 +74,7 @@ class SQLighter:
                           WHERE inserted_date > ? AND inserted_date < ? ) AND
                              type='gif'
                     """,
-                    (str(day), str(next_day), )
+                    (str(day), str(next_day),)
                 ).fetchall()
             else:
                 file_ids_tuple = self.cursor.execute(
@@ -89,14 +88,26 @@ class SQLighter:
             return file_ids_tuple[0][0]
         return None
 
-    def get_users_with_mailing(self, files:dict):
+    def get_users_with_mailing(self, files: dict):
         """ Getting users by criteria."""
-        #TODO: fix this query
+        # TODO: fix this query
         with self.connection:
             return self.cursor.execute('''
                 SELECT user_id FROM users
                 WHERE daily_gif=1
             ''').fetchall()
+
+    def update_daily_mailing(self, user_id):
+        # TODO: fix query with different params
+        with self.connection:
+            self.cursor.execute(
+                """
+                UPDATE users
+                SET daily_gif = 1
+                WHERE user_id = ?
+                """, (user_id,)
+            ).fetchall()
+            self.connection.commit()
 
     def close(self):
         """ Close connection with DB """

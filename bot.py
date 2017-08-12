@@ -55,7 +55,7 @@ def repeat_all_messages(message):
 
         app.logger.info("File size is : %s" % os.stat(frame_path).st_size)
         msg = bot.send_photo(u_id, open(frame_path, 'rb'))
-        logger.info("Done with {}.".format(u_id))
+        app.logger.info("Done with {}.".format(u_id))
         db_worker.post_file(file_id=msg.photo.file_id, file_type="frame")
 
     if speech_request == "gif":
@@ -75,6 +75,9 @@ def repeat_all_messages(message):
         except Exception as e:
             app.logger("Failed to send GIF with error %s" % e)
             bot.send_message(u_id, "Не получается сохранить гифку 😭")
+    if speech_request == "update_daily_mailing":
+        db_worker.update_daily_mailing(user_id=u_id)
+        app.logger.info("User {} want to get daily gif.".format(u_id))
     db_worker.close()
 
 

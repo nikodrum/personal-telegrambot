@@ -107,6 +107,8 @@ class Speech(object):
     @staticmethod
     def recognize(message):
         if re.findall(r"гиф", message):
+            if re.findall(r"получать", message):
+                return "update_daily_mailing"
             return "gif"
         else:
             return "frame"
