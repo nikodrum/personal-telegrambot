@@ -86,8 +86,17 @@ class SQLighter:
                     """
                 ).fetchall()
         if len(file_ids_tuple) != 0:
-            return file_ids_tuple[0]
+            return file_ids_tuple[0][0]
         return None
+
+    def get_users_with_mailing(self, files:dict):
+        """ Getting users by criteria."""
+        #TODO: fix this query
+        with self.connection:
+            return self.cursor.execute('''
+                SELECT user_id FROM users
+                WHERE daily_gif=1
+            ''').fetchall()
 
     def close(self):
         """ Close connection with DB """

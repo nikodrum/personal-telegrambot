@@ -1,3 +1,4 @@
+from database import SQLighter
 from datetime import datetime
 from models import Gif, Frame
 from loggers import logger
@@ -5,7 +6,12 @@ from pytz import timezone
 import os
 import json
 import time
+import telebot
 import requests
+
+TOKEN = os.environ['BOT_TOKEN']
+bot = telebot.TeleBot(TOKEN)
+db_worker = SQLighter(database="bot.db")
 
 
 def get_sunset_sunrise():
@@ -39,6 +45,22 @@ def set_constants():
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     logger.info("Constants set to {}".format(str(DAILY_CONST)))
+
+
+def mail_gif(name):
+
+    users_list = db_worker.get_users_with_mailing({})
+
+    file_id = None
+    for user in users_list:
+        if not file_id:
+            gif_data = open(name, 'rb')
+            msg = bot.send_document(chat_id=user[0], data=gif_data)
+            db_worker.post_file(file_id=msg.document.file_id, file_type="gif")
+            file_id = msg.document.file_id
+        else:
+            bot.send_document(chat_id=user[0], data=file_id)
+    return len(users_list)
 
 
 def run_conditions():
@@ -76,6 +98,8 @@ def run_conditions():
         if gif_name:
             DAILY_CONST["GIF_NEEDED"] = False
             logger.info("Making succeed. Saved at %s" % gif_name)
+            number = mail_gif(gif_name)
+            logger.info("Mailed to %s users." % number)
             del gif
 
     if DAILY_CONST["CURRENT_DAY"] != str(datetime.now().date()):
